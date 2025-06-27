@@ -7,7 +7,8 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "test": "vitest"
   },
   "dependencies": {
     "@nuxt/fonts": "^0.11.4",
@@ -22,6 +23,10 @@
     "@iconify-json/lucide": "^1.2.53",
     "@nuxtjs/tailwindcss": "^7.0.0-beta.0",
     "@tailwindcss/typography": "^0.5.16",
-    "tailwindcss": "^4.1.11"
+    "tailwindcss": "^4.1.11",
+    "vitest": "^1.5.0",
+    "@vue/test-utils": "^2.4.2",
+    "@vitejs/plugin-vue": "^5.2.4",
+    "jsdom": "^24.0.0"
   }
 }
