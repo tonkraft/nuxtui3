@@ -1,0 +1,1 @@
+Temporary file to indicate application.vue should be removed

@@ -1,0 +1,221 @@
+<template>
+  <div class="h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 px-6 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-semibold">
+            {{ user.initials }}
+          </div>
+          <div>
+            <h1 class="font-semibold text-neutral-900 dark:text-white">{{ user.name }}</h1>
+            <p class="text-sm text-neutral-600 dark:text-neutral-400">{{ user.status }}</p>
+          </div>
+        </div>
+        <div v-if="activeTab === 'resume'" class="bg-neutral-100 dark:bg-neutral-800 rounded-lg p-2 flex items-center gap-2">
+          <UButton size="sm" variant="ghost" icon="i-lucide-zoom-out" @click="zoomOut" />
+          <span class="text-sm px-2">{{ Math.round(scale * 100) }}%</span>
+          <UButton size="sm" variant="ghost" icon="i-lucide-zoom-in" @click="zoomIn" />
+          <UButton size="sm" variant="ghost" icon="i-lucide-download" @click="downloadPdf" />
+        </div>
+      </div>
+    </header>
+    
+    <!-- Main Content with Tabs -->
+    <div class="bg-neutral-50 dark:bg-neutral-900 flex-1 flex flex-col">
+      <!-- Tab Navigation -->
+      <div class="bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6">
+          <div class="flex space-x-1 p-1">
+            <button
+              v-for="tab in tabItems"
+              :key="tab.value"
+              @click="activeTab = tab.value"
+              :class="[
+                'flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors',
+                activeTab === tab.value
+                  ? 'bg-primary-500 text-white'
+                  : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800'
+              ]"
+            >
+              <UIcon :name="tab.icon" class="w-4 h-4" />
+              {{ tab.label }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Content -->
+      <div class="flex-1 min-h-0">
+        <div v-show="activeTab === 'resume'" class="h-full">
+          <div class="h-full bg-neutral-900 flex items-center justify-center">
+            <div class="text-center text-white">
+              <div v-if="loading" class="text-center">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                <p class="text-neutral-400">Loading PDF...</p>
+              </div>
+              <div v-else class="text-center">
+                <UIcon name="i-lucide-file-text" class="w-16 h-16 mx-auto mb-4 text-blue-400" />
+                <h2 class="text-2xl font-bold mb-2">Resume Preview</h2>
+                <p class="text-neutral-400 mb-4">sample-resume.pdf</p>
+                <div class="space-y-2">
+                  <p class="text-sm">Page {{ currentPage }} of {{ totalPages }}</p>
+                  <p class="text-sm">Zoom: {{ Math.round(scale * 100) }}%</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div v-show="activeTab === 'screening'" class="h-full overflow-y-auto">
+          <div class="p-6">
+            <h2 class="text-2xl font-bold mb-4">Screening Questions</h2>
+            <div class="bg-white dark:bg-neutral-900 rounded-lg p-6">
+              <p>Screening content will be loaded here...</p>
+            </div>
+          </div>
+        </div>
+        
+        <div v-show="activeTab === 'profile'" class="h-full overflow-y-auto">
+          <div class="p-6">
+            <h2 class="text-2xl font-bold mb-4">Profile Editor</h2>
+            <div class="bg-white dark:bg-neutral-900 rounded-lg p-6">
+              <p>Profile editing interface will be loaded here...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <footer class="bg-white dark:bg-neutral-900 border-t border-neutral-200 dark:border-neutral-800 px-6 py-3">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <UButton size="sm" variant="outline" icon="i-lucide-chevron-left">Previous</UButton>
+          <span class="text-sm text-neutral-600">{{ currentApplicationIndex }} of {{ applications.length }}</span>
+          <UButton size="sm" variant="outline" icon="i-lucide-chevron-right">Next</UButton>
+        </div>
+        <UButton size="sm" @click="toggleInfo" icon="i-lucide-info">Info (i)</UButton>
+      </div>
+    </footer>
+  </div>
+</template>
+
+<script setup>
+// import ScreeningTab from '~/components/tabs/ScreeningTab.vue'
+// import ProfileTab from '~/components/tabs/ProfileTab.vue'
+
+// User data
+const user = {
+  name: 'Jessica Doe',
+  status: 'Active • Screening',
+  initials: 'JD'
+}
+
+// Tab management
+const activeTab = ref('resume')
+
+const tabItems = [
+  {
+    value: 'resume',
+    label: 'Resume',
+    icon: 'i-lucide-file-text'
+  },
+  {
+    value: 'screening',
+    label: 'Screening',
+    icon: 'i-lucide-search'
+  },
+  {
+    value: 'profile',
+    label: 'Profile',
+    icon: 'i-lucide-user'
+  }
+]
+
+// PDF state (temporarily disabled)
+const currentPage = ref(1)
+const scale = ref(1.0)
+const loading = ref(false)
+const error = ref('')
+
+// Sample applications data
+const applications = ref([
+  { id: '1', name: 'Jessica Doe', initials: 'JD' },
+  { id: '2', name: 'Michael Chen', initials: 'MC' },
+  { id: '3', name: 'Sarah Wilson', initials: 'SW' },
+  { id: '4', name: 'Alex Rodriguez', initials: 'AR' },
+  { id: '5', name: 'Emily Johnson', initials: 'EJ' },
+  { id: '6', name: 'David Kim', initials: 'DK' },
+  { id: '7', name: 'Lisa Brown', initials: 'LB' },
+  { id: '8', name: 'James Miller', initials: 'JM' },
+  { id: '9', name: 'Anna Garcia', initials: 'AG' },
+  { id: '10', name: 'Tom Anderson', initials: 'TA' },
+  { id: '11', name: 'Maya Patel', initials: 'MP' },
+  { id: '12', name: 'Chris Taylor', initials: 'CT' }
+])
+
+const currentApplicationIndex = ref(3)
+const currentStage = ref('Screening')
+
+// PDF control handlers
+const zoomIn = () => {
+  scale.value = Math.min(scale.value + 0.25, 3.0)
+}
+
+const zoomOut = () => {
+  scale.value = Math.max(scale.value - 0.25, 0.5)
+}
+
+const fitToWidth = () => {
+  scale.value = 1.0
+}
+
+const downloadPdf = () => {
+  const link = document.createElement('a')
+  link.href = pdfSrc
+  link.download = pdfSrc.split('/').pop() || 'document.pdf'
+  link.click()
+}
+
+// Navigation handlers
+const goToPreviousApplication = () => {
+  if (currentApplicationIndex.value > 1) {
+    currentApplicationIndex.value--
+    console.log('Going to previous application:', applications.value[currentApplicationIndex.value - 1])
+  }
+}
+
+const goToNextApplication = () => {
+  if (currentApplicationIndex.value < applications.value.length) {
+    currentApplicationIndex.value++
+    console.log('Going to next application:', applications.value[currentApplicationIndex.value - 1])
+  }
+}
+
+// Simple info toggle
+const toggleInfo = () => {
+  console.log('Info toggle clicked - slideover would open here')
+}
+
+// Keyboard shortcuts for tab switching
+const handleKeyup = (event) => {
+  if (event.key === 'r' || event.key === 'R') {
+    activeTab.value = 'resume'
+  } else if (event.key === 's' || event.key === 'S') {
+    activeTab.value = 'screening'
+  } else if (event.key === 'p' || event.key === 'P') {
+    activeTab.value = 'profile'
+  } else if (event.key === 'i' || event.key === 'I') {
+    toggleInfo()
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keyup', handleKeyup)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keyup', handleKeyup)
+})
+</script>

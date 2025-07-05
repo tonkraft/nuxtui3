@@ -1,0 +1,4 @@
+<script setup>
+// This file was moved to allow /pages/application/ directory routing to work
+// Original content preserved in application.vue.backup
+</script>

@@ -1,0 +1,25 @@
+export default defineNuxtConfig({
+  modules: [
+    '@nuxt/ui',
+    '@nuxtjs/color-mode'
+  ],
+
+  devtools: {
+    enabled: true
+  },
+
+  css: ['~/assets/css/main.css'],
+
+  compatibilityDate: '2025-05-15',
+
+  plugins: [
+    '~/plugins/polyfills.client.js',
+    '~/plugins/polyfills.server.js'
+  ],
+
+  vite: {
+    optimizeDeps: {
+      include: ['@internationalized/date', '@vueuse/shared', 'tailwindcss/colors', 'tailwind-variants', 'ufo', 'zod']
+    }
+  }
+})
